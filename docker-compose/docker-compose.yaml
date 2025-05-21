@@ -1,5 +1,22 @@
-version: '2.4'
 services:
+  # CODE_HOST_SERVICES
+  gerrit:
+    container_name: gerrit
+    image: docker.io/gerritcodereview/gerrit:3.12.0
+    environment:
+      CANONICAL_WEB_URL: http://localhost
+    networks:
+      - sourcegraph
+    ports:
+      - 29418:29418
+      - 8080:8080
+    volumes:
+       - gerrit-git-volume:/var/gerrit/git
+       - gerrit-index-volume:/var/gerrit/index
+       - gerrit-cache-volume:/var/gerrit/cache
+       - gerrit-db-volume:/var/gerrit/db
+  # CODE_HOST_SERVICES
+
   # Description: This container will migrate the Postgres `frontend`,
   # `codeintel`, and `codeinsights` databases
   #
@@ -809,5 +826,10 @@ volumes:
   sourcegraph-frontend-internal-0:
   symbols-0:
   zoekt-0-shared:
+  # gerrit
+  gerrit-db-volume:
+  gerrit-git-volume:
+  gerrit-index-volume:
+  gerrit-cache-volume:
 networks:
   sourcegraph:
