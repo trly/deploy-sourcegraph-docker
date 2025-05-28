@@ -34,7 +34,7 @@ services:
   # for this container will need to be updated to reflect the new connection information.
   migrator:
     container_name: migrator
-    image: 'index.docker.io/sourcegraph/migrator:6.3.2692@sha256:44f3efaf8df0dfd38cb997437c4d129a1d7fa7ce01e0cf643e78f6f774b09980'
+    image: 'index.docker.io/sourcegraph/migrator:6.4.0@sha256:c31dda34593f20b6c98e70b6ceb0c5be4ac813fbf45fbdb5ee59acc1e15404bf'
     cpus: 0.5
     mem_limit: '500m'
     command: ['up']
@@ -90,7 +90,7 @@ services:
   # https://caddyserver.com/docs/caddyfile
   caddy:
     container_name: caddy
-    image: 'index.docker.io/sourcegraph/caddy:6.3.2692@sha256:4dfb56f6a2170fe1b88818d1a3d3f1ddab1e3176902e04f3f40d7ad00870178b'
+    image: 'index.docker.io/sourcegraph/caddy:6.4.0@sha256:bc9a70140020df0605d22247ef5c255074d8e9e5ccf1fd1bd5740feebeada360'
     cpus: 4
     mem_limit: '4g'
     environment:
@@ -139,13 +139,13 @@ services:
   # Ports exposed to other Sourcegraph services: 6060/TCP, 3080 (HTTP), and/or 3443 (HTTPS)
   # Ports exposed to the public internet: none
   #
-  # Note: SRC_GIT_SERVERS, SEARCHER_URL, and SYMBOLS_URL are space-separated
+  # Note: SRC_GIT_SERVERS, and SEARCHER_URL are space-separated
   # lists which each allow you to specify more container instances for scaling
   # purposes. Be sure to also apply such a change here to the frontend-internal
   # service.
   sourcegraph-frontend-0:
     container_name: sourcegraph-frontend-0
-    image: 'index.docker.io/sourcegraph/frontend:6.3.2692@sha256:62c517e75373cc75207b64707b3271b78079f2542305d0b18e1738c292fa26c0'
+    image: 'index.docker.io/sourcegraph/frontend:6.4.0@sha256:0912d2a747420679b027fa0f95f6a475e129750fe5ee73afe54a74d5b0eadb9f'
     cpus: 4
     mem_limit: '8g'
     environment:
@@ -157,10 +157,9 @@ services:
       - 'SRC_GIT_SERVERS=gitserver-0:3178'
       - 'SRC_SYNTECT_SERVER=http://syntect-server:9238'
       - 'SEARCHER_URL=http://searcher-0:3181'
-      - 'SYMBOLS_URL=http://symbols-0:3184'
+      - 'INDEXED_SEARCH_INDEXER=zoekt-indexserver-0:6072'
       - 'INDEXED_SEARCH_SERVERS=zoekt-webserver-0:6070'
       - 'SRC_FRONTEND_INTERNAL=sourcegraph-frontend-internal:3090'
-      - 'REPO_UPDATER_URL=http://repo-updater:3182'
       - 'GRAFANA_SERVER_URL=http://grafana:3370'
       - 'PROMETHEUS_URL=http://prometheus:9090'
       - 'PRECISE_CODE_INTEL_UPLOAD_BACKEND=blobstore'
@@ -172,8 +171,6 @@ services:
             { "Name": "frontend-internal-0", "Host": "sourcegraph-frontend-internal:6060" },
             { "Name": "gitserver-0", "Host": "gitserver-0:6060" },
             { "Name": "searcher-0", "Host": "searcher-0:6060" },
-            { "Name": "symbols-0", "Host": "symbols-0:6060" },
-            { "Name": "repo-updater", "Host": "repo-updater:6060" },
             { "Name": "worker", "Host": "worker:6060" },
             { "Name": "zoekt-indexserver-0", "Host": "zoekt-indexserver-0:6072" },
             { "Name": "zoekt-webserver-0", "Host": "zoekt-webserver-0:6070", "DefaultPath": "/debug/requests/" }
@@ -201,7 +198,7 @@ services:
   #
   sourcegraph-frontend-internal:
     container_name: sourcegraph-frontend-internal
-    image: 'index.docker.io/sourcegraph/frontend:6.3.2692@sha256:62c517e75373cc75207b64707b3271b78079f2542305d0b18e1738c292fa26c0'
+    image: 'index.docker.io/sourcegraph/frontend:6.4.0@sha256:0912d2a747420679b027fa0f95f6a475e129750fe5ee73afe54a74d5b0eadb9f'
     cpus: 4
     mem_limit: '8g'
     environment:
@@ -212,11 +209,10 @@ services:
       - 'SRC_GIT_SERVERS=gitserver-0:3178'
       - 'SRC_SYNTECT_SERVER=http://syntect-server:9238'
       - 'SEARCHER_URL=http://searcher-0:3181'
-      - 'SYMBOLS_URL=http://symbols-0:3184'
+      - 'INDEXED_SEARCH_INDEXER=zoekt-indexserver-0:6072'
       - 'INDEXED_SEARCH_SERVERS=zoekt-webserver-0:6070'
       - 'SRC_FRONTEND_INTERNAL=sourcegraph-frontend-internal:3090'
-      - 'REPO_UPDATER_URL=http://repo-updater:3182'
-      - 'GRAFANA_SERVER_URL=http://grafana:3000'
+      - 'GRAFANA_SERVER_URL=http://grafana:3370'
       - 'PROMETHEUS_URL=http://prometheus:9090'
       - 'PRECISE_CODE_INTEL_UPLOAD_BACKEND=blobstore'
       - 'PRECISE_CODE_INTEL_UPLOAD_AWS_ENDPOINT=http://blobstore:9000'
@@ -248,7 +244,7 @@ services:
   #
   gitserver-0:
     container_name: gitserver-0
-    image: 'index.docker.io/sourcegraph/gitserver:6.3.2692@sha256:2ff246896150e48e9c034cb1b395725bf44c2c61dc3170fc3b31bf1aee0bd1bc'
+    image: 'index.docker.io/sourcegraph/gitserver:6.4.0@sha256:09eeebddb13e81350adbfe5b39698617c4f460c92ac31132301f06ecc438a67e'
     cpus: 4
     mem_limit: '8g'
     environment:
@@ -271,7 +267,7 @@ services:
   #
   zoekt-indexserver-0:
     container_name: zoekt-indexserver-0
-    image: 'index.docker.io/sourcegraph/search-indexer:6.3.2692@sha256:cd2b88c6c8f916d2a92f9eec8faddb281968652981e385e025cd2173246d7faf'
+    image: 'index.docker.io/sourcegraph/search-indexer:6.4.0@sha256:5ff00db1e90a3f607c8e45ea404ae74bbb7d84497d3c8e0304dcb762ea29cc3f'
     cpus: 8
     mem_limit: '16g'
     environment:
@@ -294,7 +290,7 @@ services:
   #
   zoekt-webserver-0:
     container_name: zoekt-webserver-0
-    image: 'index.docker.io/sourcegraph/indexed-searcher:6.3.2692@sha256:f0d6352ba3f5bd0f1b54db8c2915dd11b80e47e7cba752a746e3ec6be3df9369'
+    image: 'index.docker.io/sourcegraph/indexed-searcher:6.4.0@sha256:c301e0c9f485ecefcaca994a96e8f063e9635206b22bc90206590d1685e08026'
     cpus: 8
     mem_limit: '50g'
     environment:
@@ -321,7 +317,7 @@ services:
   #
   searcher-0:
     container_name: searcher-0
-    image: 'index.docker.io/sourcegraph/searcher:6.3.2692@sha256:cc97f7c0044ca8226455a564ba43abe50b641b78780d4445eb8d9f098b3d0b99'
+    image: 'index.docker.io/sourcegraph/searcher:6.4.0@sha256:080a9c5732c2717a9fa4a36c7fec8e6a45925f2cd40dc14a4bf7676e06d379f3'
     cpus: 2
     mem_limit: '2g'
     environment:
@@ -345,7 +341,7 @@ services:
   #
   precise-code-intel-worker:
     container_name: precise-code-intel-worker
-    image: 'index.docker.io/sourcegraph/precise-code-intel-worker:6.3.2692@sha256:bb1cbd4ce0c24901e75c496a41b41d681ae274727ea58e2b07b382e398285b70'
+    image: 'index.docker.io/sourcegraph/precise-code-intel-worker:6.4.0@sha256:ede7f2b0b8eda306b4ce7ae70bac97e843042f23e84cb5f63652c33adcb59170'
     cpus: 2
     mem_limit: '4g'
     environment:
@@ -363,26 +359,6 @@ services:
       - sourcegraph
     restart: always
 
-  # Description: Handles repository metadata (not Git data) lookups and updates from external code hosts and other similar services.
-  #
-  # Disk: 128GB / non-persistent SSD
-  # Ports exposed to other Sourcegraph services: 3182/TCP 6060/TCP
-  # Ports exposed to the public internet: none
-  #
-  repo-updater:
-    container_name: repo-updater
-    image: 'index.docker.io/sourcegraph/repo-updater:6.3.2692@sha256:595bb363541e5a6ebe9d0f4e458d92807013820c345cf8183e480de7e04cd39b'
-    cpus: 4
-    mem_limit: '4g'
-    environment:
-      - 'SRC_FRONTEND_INTERNAL=sourcegraph-frontend-internal:3090'
-      - 'OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317'
-    volumes:
-      - 'repo-updater:/mnt/cache'
-    networks:
-      - sourcegraph
-    restart: always
-
   # Description: Manages background processes.
   #
   # Disk: 128GB / non-persistent SSD
@@ -391,7 +367,7 @@ services:
   #
   worker:
     container_name: worker
-    image: 'index.docker.io/sourcegraph/worker:6.3.2692@sha256:75be28239eeeee35c0df00db99412ca9f698b813feaa4a305af8ee14c22e0f0c'
+    image: 'index.docker.io/sourcegraph/worker:6.4.0@sha256:aa3db9027e255d96c3e7eb7f67895bca7a90c35cf614c85e0b0e33a1e24ea338'
     cpus: 4
     mem_limit: '4g'
     environment:
@@ -399,7 +375,6 @@ services:
       - 'OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317'
       - 'SRC_GIT_SERVERS=gitserver-0:3178'
       - 'SEARCHER_URL=http://searcher-0:3181'
-      - 'SYMBOLS_URL=http://symbols-0:3184'
       - 'INDEXED_SEARCH_SERVERS=zoekt-webserver-0:6070'
       - 'PRECISE_CODE_INTEL_UPLOAD_BACKEND=blobstore'
       - 'PRECISE_CODE_INTEL_UPLOAD_AWS_ENDPOINT=http://blobstore:9000'
@@ -417,7 +392,7 @@ services:
   #
   syntactic-code-intel-worker:
     container_name: syntactic-code-intel-worker
-    image: 'index.docker.io/sourcegraph/syntactic-code-intel-worker:6.3.2692@sha256:23963263fb9e9d6d1cc91cbc504f479f0b6d9f6c3a89b5234e8743e0b882ea2c'
+    image: 'index.docker.io/sourcegraph/syntactic-code-intel-worker:6.4.0@sha256:4538bcb69789a19c882da820b55e0d2802d83b9a041424a6af25d687d3a48d09'
     cpus: 2
     mem_limit: '4g'
     environment:
@@ -444,7 +419,7 @@ services:
   #
   syntect-server:
     container_name: syntect-server
-    image: 'index.docker.io/sourcegraph/syntax-highlighter:6.3.2692@sha256:d220688ef331c0caa22f81c7ddade9efa2a8618c7318b443ac75fd8f07a1d8f6'
+    image: 'index.docker.io/sourcegraph/syntax-highlighter:6.4.0@sha256:fcc780ec16557cd9a996dc9cf2cdee164fd64bc1a10c7c3f1501403978f19ae9'
     cpus: 4
     mem_limit: '6g'
     healthcheck:
@@ -457,32 +432,6 @@ services:
       - sourcegraph
     restart: always
 
-  # Description: Backend for symbols operations.
-  #
-  # Disk: 128GB / non-persistent SSD
-  # Ports exposed to other Sourcegraph services: 3184/TCP 6060/TCP
-  # Ports exposed to the public internet: none
-  #
-  symbols-0:
-    container_name: symbols-0
-    image: 'index.docker.io/sourcegraph/symbols:6.3.2692@sha256:31735948078b5c06bb3893ba3233c706b67e77e32b9a2a8cfb48b9bd319dbc81'
-    cpus: 2
-    mem_limit: '4g'
-    environment:
-      - 'SRC_FRONTEND_INTERNAL=sourcegraph-frontend-internal:3090'
-      - 'OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317'
-    healthcheck:
-      test: "wget -q 'http://127.0.0.1:3184/healthz' -O /dev/null || exit 1"
-      interval: 5s
-      timeout: 5s
-      retries: 3
-      start_period: 60s
-    volumes:
-      - 'symbols-0:/mnt/cache'
-    networks:
-      - sourcegraph
-    restart: always
-
   # Description: Prometheus collects metrics and aggregates them into graphs.
   #
   # Disk: 200GB / persistent SSD
@@ -491,7 +440,7 @@ services:
   #
   prometheus:
     container_name: prometheus
-    image: 'index.docker.io/sourcegraph/prometheus:6.3.2692@sha256:e38e96de888597435c9be268f478d59ac734b60c3511b8ea1ac42bed865ea005'
+    image: 'index.docker.io/sourcegraph/prometheus:6.4.0@sha256:5d54756d397ca5f67b5bb8fddeae954f041710b26e3a5bdb9bad74d9e63d1e43'
     cpus: 4
     mem_limit: '8g'
     volumes:
@@ -518,15 +467,13 @@ services:
   # 'GF_SERVER_ROOT_URL='https://grafana.example.com'
   grafana:
     container_name: grafana
-    image: 'index.docker.io/sourcegraph/grafana:6.3.2692@sha256:211f46d18176b94eab7a1bce0c98252507b732b2bd329f32e90e9e7439163187'
+    image: 'index.docker.io/sourcegraph/grafana:6.4.0@sha256:e8d0600f38a69742cdf6e52c972cce7bfa84ce7b67ecb93d8ff4b7692c850440'
     cpus: 1
     mem_limit: '1g'
     volumes:
       - 'grafana:/var/lib/grafana'
       - '../grafana/datasources:/sg_config_grafana/provisioning/datasources'
       - '../grafana/dashboards:/sg_grafana_additional_dashboards'
-    ports:
-      - '0.0.0.0:3370:3370'
     networks:
       - sourcegraph
     restart: always
@@ -539,7 +486,7 @@ services:
   #
   cadvisor:
     container_name: cadvisor
-    image: 'index.docker.io/sourcegraph/cadvisor:6.3.2692@sha256:0263c7cee7f210ab33e10bf3a559fda7be3e8d61e75fcc6571ba191e1d0a9c9a'
+    image: 'index.docker.io/sourcegraph/cadvisor:6.4.0@sha256:7f06befd27fc750fb3b720a6d2716eea67bb35872527fce649488fea02a769b5'
     cpus: 1
     mem_limit: '1g'
     # You may set `privileged` to `false and `cadvisor` will run with reduced privileges.
@@ -572,7 +519,7 @@ services:
   #
   node-exporter:
     container_name: node-exporter
-    image: 'index.docker.io/sourcegraph/node-exporter:6.3.2692@sha256:5f1750b1678a3996e79c3a1fad34c44ab023517566b53e9f92d8f7a3d29855e1'
+    image: 'index.docker.io/sourcegraph/node-exporter:6.4.0@sha256:3b6255c8babec95edabcfa5e1a302f13a71c61da704c236576edafc9f852f554'
     cpus: .5
     mem_limit: '1g'
     pid: 'host'
@@ -601,7 +548,7 @@ services:
   #
   pgsql:
     container_name: pgsql
-    image: 'index.docker.io/sourcegraph/postgresql-16:6.3.2692@sha256:d517aa74131fa56486bf665c76c51e3dbefef6a2d271a9d5a7fa758909b50511'
+    image: 'index.docker.io/sourcegraph/postgresql-16:6.4.0@sha256:be276825a044fd39f98fd40db78d92a83243937898265c73a2ca4295d49228f5'
     cpus: 4
     mem_limit: '4g'
     shm_size: '1g'
@@ -629,7 +576,7 @@ services:
   # for this container will need to be updated to reflect the new connection information.
   pgsql-exporter:
     container_name: pgsql-exporter
-    image: 'index.docker.io/sourcegraph/postgres_exporter:6.3.2692@sha256:f3c2625e227b208db4f56f6d8cc80b227609d1328c267c6eda736f3affd9f1c9'
+    image: 'index.docker.io/sourcegraph/postgres_exporter:6.4.0@sha256:266178fe472218ca96f3efbf6fd24ee8b068fd6f852fe5be71541d7a06232ec0'
     cpus: 0.1
     mem_limit: '50m'
     networks:
@@ -648,7 +595,7 @@ services:
   #
   codeintel-db:
     container_name: codeintel-db
-    image: 'index.docker.io/sourcegraph/postgresql-16:6.3.2692@sha256:d517aa74131fa56486bf665c76c51e3dbefef6a2d271a9d5a7fa758909b50511'
+    image: 'index.docker.io/sourcegraph/postgresql-16:6.4.0@sha256:be276825a044fd39f98fd40db78d92a83243937898265c73a2ca4295d49228f5'
     cpus: 4
     mem_limit: '4g'
     shm_size: '1g'
@@ -676,7 +623,7 @@ services:
   # for this container will need to be updated to reflect the new connection information.
   codeintel-db-exporter:
     container_name: codeintel-db-exporter
-    image: 'index.docker.io/sourcegraph/postgres_exporter:6.3.2692@sha256:f3c2625e227b208db4f56f6d8cc80b227609d1328c267c6eda736f3affd9f1c9'
+    image: 'index.docker.io/sourcegraph/postgres_exporter:6.4.0@sha256:266178fe472218ca96f3efbf6fd24ee8b068fd6f852fe5be71541d7a06232ec0'
     cpus: 0.1
     mem_limit: '50m'
     networks:
@@ -695,7 +642,7 @@ services:
   #
   codeinsights-db:
     container_name: codeinsights-db
-    image: 'index.docker.io/sourcegraph/postgresql-16-codeinsights:6.3.2692@sha256:35a8d053676b98a3c2dab6fb4f0261825e81ad68e151818d6350dcec6140b7c3'
+    image: 'index.docker.io/sourcegraph/postgresql-16-codeinsights:6.4.0@sha256:a46bcf936ccb96c98d1184ecf54112b381f6599e52eca41784b786e8e268d879'
     cpus: 4
     mem_limit: '2g'
     shm_size: '1g'
@@ -728,7 +675,7 @@ services:
   # for this container will need to be updated to reflect the new connection information.
   codeinsights-db-exporter:
     container_name: codeinsights-db-exporter
-    image: 'index.docker.io/sourcegraph/postgres_exporter:6.3.2692@sha256:f3c2625e227b208db4f56f6d8cc80b227609d1328c267c6eda736f3affd9f1c9'
+    image: 'index.docker.io/sourcegraph/postgres_exporter:6.4.0@sha256:266178fe472218ca96f3efbf6fd24ee8b068fd6f852fe5be71541d7a06232ec0'
     cpus: 0.1
     mem_limit: '50m'
     networks:
@@ -747,7 +694,7 @@ services:
   #
   blobstore:
     container_name: blobstore
-    image: 'index.docker.io/sourcegraph/blobstore:6.3.2692@sha256:1fc17a969b6c1f3603454bae3e426047db311b0de25844913c5b68fb36f603a0'
+    image: 'index.docker.io/sourcegraph/blobstore:6.4.0@sha256:57b4b75f0b7bdb4570f6da3a926c708449f6ffa92f11b3160b3ca68e2baa30dc'
     cpus: 1
     mem_limit: '1g'
     healthcheck:
@@ -770,7 +717,7 @@ services:
   #
   redis-cache:
     container_name: redis-cache
-    image: 'index.docker.io/sourcegraph/redis-cache:6.3.2692@sha256:d4a7c2632ae7ef577b922d9010b7ec112c04e86ad6b7f17bcaad0ca4566d9dc6'
+    image: 'index.docker.io/sourcegraph/redis-cache:6.4.0@sha256:e34906e959797b3d1c9dc4f76fda59234987c272be6261040e3c037616aed559'
     cpus: 1
     mem_limit: '7g'
     volumes:
@@ -786,7 +733,7 @@ services:
   #
   redis-store:
     container_name: redis-store
-    image: 'index.docker.io/sourcegraph/redis-store:6.3.2692@sha256:2712f4b8ba2ef5627560d31e454af9fbbf273ce20184a014c78fc5ba7f4352a8'
+    image: 'index.docker.io/sourcegraph/redis-store:6.4.0@sha256:ff7a323201e40af6e0194aa869755fe20b6320c1320422a4ea9ee96a094cc29c'
     cpus: 1
     mem_limit: '7g'
     volumes:
@@ -801,7 +748,7 @@ services:
   # Ports exposed to the public internet: none
   otel-collector:
     container_name: otel-collector
-    image: 'index.docker.io/sourcegraph/opentelemetry-collector:6.3.2692@sha256:0be920d62ce366abf502108a2fb74085d1391e38bce6417de117b3eff325bf4f'
+    image: 'index.docker.io/sourcegraph/opentelemetry-collector:6.4.0@sha256:815a1b4066357be5a2e4dfcc118c00d6dceb42a5904f71a54da5bd7a75d853b4'
     cpus: 1
     mem_limit: '1g'
     networks:
@@ -823,12 +770,10 @@ volumes:
   prometheus-v2:
   redis-cache:
   redis-store:
-  repo-updater:
   worker:
   searcher-0:
   sourcegraph-frontend-0:
   sourcegraph-frontend-internal-0:
-  symbols-0:
   zoekt-0-shared:
   # GitLab
   gitlab-db-volume:
