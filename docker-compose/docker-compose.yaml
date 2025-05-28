@@ -1,20 +1,24 @@
 services:
   # CODE_HOST_SERVICES
-  gerrit:
-    container_name: gerrit
-    image: docker.io/gerritcodereview/gerrit:3.12.0
+  gitlab:
+    image: docker.io/gitlab/gitlab-ce:17.10.7-ce.0
+    container_name: gitlab
+    restart: always
+    hostname: 'gitlab.example.com'
     environment:
-      CANONICAL_WEB_URL: http://localhost
-    networks:
-      - sourcegraph
+      GITLAB_OMNIBUS_CONFIG: |
+        # Add any other gitlab.rb configuration here, each on its own line
+        external_url 'http://localhost:8081'
     ports:
-      - 29418:29418
-      - 8080:8080
+      - 8081:80
+      - 8443:443
+      - 2222:22
     volumes:
-       - gerrit-git-volume:/var/gerrit/git
-       - gerrit-index-volume:/var/gerrit/index
-       - gerrit-cache-volume:/var/gerrit/cache
-       - gerrit-db-volume:/var/gerrit/db
+      - gitlab-db-volume:/var/opt/gitlab/postgresql
+      - gitlab-data-volume:/var/opt/gitlab/data
+      - gitlab-logs-volume:/var/log/gitlab
+      - gitlab-config-volume:/etc/gitlab
+    shm_size: '256m'
   # CODE_HOST_SERVICES
 
   # Description: This container will migrate the Postgres `frontend`,
@@ -826,10 +830,10 @@ volumes:
   sourcegraph-frontend-internal-0:
   symbols-0:
   zoekt-0-shared:
-  # gerrit
-  gerrit-db-volume:
-  gerrit-git-volume:
-  gerrit-index-volume:
-  gerrit-cache-volume:
+  # GitLab
+  gitlab-db-volume:
+  gitlab-data-volume:
+  gitlab-logs-volume:
+  gitlab-config-volume:
 networks:
   sourcegraph:
